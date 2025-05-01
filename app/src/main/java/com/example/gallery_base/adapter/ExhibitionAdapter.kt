@@ -5,15 +5,38 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.gallery_base.R
 import com.example.gallery_base.data.Exhibition
 import com.example.gallery_base.databinding.ElementExhibitionListBinding
+import java.util.UUID
 
-class ExhibitionAdapter : ListAdapter<Exhibition, ExhibitionAdapter.ExhibitionViewHolder>(DiffCallback) {
+class ExhibitionAdapter(
+    private val onItemClick: (Exhibition) -> Unit
+) : ListAdapter<Exhibition, ExhibitionAdapter.ExhibitionViewHolder>(DiffCallback) {
+
+    private var selectedId: UUID? = null
+
+    fun setSelectedId(id: UUID?) {
+        selectedId = id
+        notifyDataSetChanged()
+    }
 
     inner class ExhibitionViewHolder(private val binding: ElementExhibitionListBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(exhibition: Exhibition) {
             binding.tvExhibition.text = exhibition.title
+
+            // Выделение
+            if (exhibition.id == selectedId) {
+                binding.root.setBackgroundResource(R.drawable.selected_background)
+            } else {
+                binding.root.setBackgroundResource(android.R.color.transparent)
+            }
+
+            binding.root.setOnClickListener {
+                onItemClick(exhibition)
+                setSelectedId(exhibition.id) // Обновляем выделение
+            }
         }
     }
 

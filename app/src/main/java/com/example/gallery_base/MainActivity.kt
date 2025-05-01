@@ -26,9 +26,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("MainActivity", "onCreate")
         setContentView(R.layout.activity_main)
-
-        Log.d("AAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAAAAAAAA")
+        Log.d("MainActivity", "setContentView done")
         onBackPressedDispatcher.addCallback(this) {
             if (supportFragmentManager.backStackEntryCount > 0) {
                 supportFragmentManager.popBackStack()
@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         showFragment(activeFragment, null)
+        Log.d("MainActivity", "showFragment called")
     }
 
     private var activeFragment: NamesOfFragment = NamesOfFragment.EXHIBITION

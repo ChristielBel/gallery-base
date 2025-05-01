@@ -1,15 +1,14 @@
 package com.example.gallery_base.fragment
 
 import android.app.AlertDialog
-import androidx.fragment.app.viewModels
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gallery_base.MainActivity
@@ -18,7 +17,6 @@ import com.example.gallery_base.adapter.ExhibitionAdapter
 import com.example.gallery_base.data.AppContainer
 import com.example.gallery_base.data.Exhibition
 import com.example.gallery_base.databinding.FragmentExhibitionBinding
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class ExhibitionFragment : Fragment(), MainActivity.Edit {
@@ -33,6 +31,7 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
         )
     }
 
+    private var selectedExhibition: Exhibition? = null
 
     companion object {
         fun newInstance() = ExhibitionFragment()
@@ -49,13 +48,16 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = ExhibitionAdapter()
+        adapter = ExhibitionAdapter { exhibition ->
+            selectedExhibition = exhibition
+            adapter.setSelectedId(exhibition.id)
+        }
         binding.rvExhibition.layoutManager = LinearLayoutManager(requireContext())
         binding.rvExhibition.adapter = adapter
 
         // Подписка на Flow из ViewModel
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.exhibitions.collectLatest { exhibitions ->
+            viewModel.exhibitions.collect { exhibitions ->
                 adapter.submitList(exhibitions)
             }
         }
@@ -67,29 +69,47 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
     }
 
     override fun append() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_string, null)
+        val editText = dialogView.findViewById<EditText>(R.id.etString)
+        val textView = dialogView.findViewById<TextView>(R.id.tvInfo)
+        textView.text = "Введите название новой выставки"
+
         AlertDialog.Builder(requireContext())
             .setTitle("Добавить выставку")
-            .setMessage("Вы действительно хотите добавить новую выставку?")
-            .setPositiveButton("Да") { _, _ ->
-                val newExhibition = Exhibition(title = "Новая выставка")
-                lifecycleScope.launch {
-                    viewModel.insertExhibition(newExhibition)
+            .setView(dialogView)
+            .setPositiveButton("Сохранить") { _, _ ->
+                val input = editText.text.toString()
+                if (input.isNotBlank()) {
+                    val newExhibition = Exhibition(title = input)
+                    lifecycleScope.launch {
+                        viewModel.insertExhibition(newExhibition)
+                    }
                 }
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
 
+
     override fun update() {
         val current = viewModel.exhibitions.value.firstOrNull()
         if (current != null) {
+            val dialogView = layoutInflater.inflate(R.layout.dialog_string, null)
+            val editText = dialogView.findViewById<EditText>(R.id.etString)
+            val textView = dialogView.findViewById<TextView>(R.id.tvInfo)
+            textView.text = "Измените название выставки"
+            editText.setText(current.title)
+
             AlertDialog.Builder(requireContext())
                 .setTitle("Обновить выставку")
-                .setMessage("Вы действительно хотите обновить первую выставку?")
-                .setPositiveButton("Да") { _, _ ->
-                    val updated = current.copy(title = current.title + " (Обновлено)")
-                    lifecycleScope.launch {
-                        viewModel.updateExhibition(updated)
+                .setView(dialogView)
+                .setPositiveButton("Сохранить") { _, _ ->
+                    val updatedTitle = editText.text.toString()
+                    if (updatedTitle.isNotBlank()) {
+                        val updated = current.copy(title = updatedTitle)
+                        lifecycleScope.launch {
+                            viewModel.updateExhibition(updated)
+                        }
                     }
                 }
                 .setNegativeButton("Отмена", null)
@@ -97,20 +117,26 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
         }
     }
 
+
     override fun delete() {
-        val current = viewModel.exhibitions.value.firstOrNull()
+        val current = selectedExhibition
         if (current != null) {
             AlertDialog.Builder(requireContext())
                 .setTitle("Удалить выставку")
-                .setMessage("Вы действительно хотите удалить первую выставку?")
+                .setMessage("Вы действительно хотите удалить выставку \"${current.title}\"?")
                 .setPositiveButton("Да") { _, _ ->
                     lifecycleScope.launch {
                         viewModel.deleteExhibition(current)
+                        selectedExhibition = null
                     }
                 }
                 .setNegativeButton("Отмена", null)
                 .show()
+        } else {
+            AlertDialog.Builder(requireContext())
+                .setMessage("Сначала выберите выставку для удаления")
+                .setPositiveButton("Ок", null)
+                .show()
         }
     }
-
 }
