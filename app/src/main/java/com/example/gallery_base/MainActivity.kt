@@ -15,6 +15,7 @@ import com.example.gallery_base.fragment.ArtistFragment
 import com.example.gallery_base.fragment.ExhibitionFragment
 import com.example.gallery_base.fragment.PaintingFragment
 import com.example.gallery_base.repository.ExhibitionRepository
+import java.util.UUID
 import kotlin.math.log
 
 class MainActivity : AppCompatActivity() {
@@ -26,9 +27,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("MainActivity", "onCreate")
         setContentView(R.layout.activity_main)
-
-        Log.d("AAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAAAAAAAA")
+        Log.d("MainActivity", "setContentView done")
         onBackPressedDispatcher.addCallback(this) {
             if (supportFragmentManager.backStackEntryCount > 0) {
                 supportFragmentManager.popBackStack()
@@ -41,19 +42,20 @@ class MainActivity : AppCompatActivity() {
                         activeFragment = NamesOfFragment.EXHIBITION
                     }
 
-                    NamesOfFragment.PAINTING -> {
-                        activeFragment = NamesOfFragment.ARTIST
-                    }
+            NamesOfFragment.PAINTING -> {
+            activeFragment = NamesOfFragment.ARTIST
+        }
 
-                    else -> {}
-                }
-                updateMenu(activeFragment)
-            } else {
+            else -> {}
+        }
+        updateMenu(activeFragment)
+    } else {
                 finish()
             }
         }
 
         showFragment(activeFragment, null)
+        Log.d("MainActivity", "showFragment called")
     }
 
     private var activeFragment: NamesOfFragment = NamesOfFragment.EXHIBITION
@@ -111,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         _miDeleteArtist?.isVisible = fragmentType == NamesOfFragment.ARTIST
     }
 
-    fun showFragment(fragmentType: NamesOfFragment, painting: Painting?) {
+    fun showFragment(fragmentType: NamesOfFragment, painting: Painting?,  exhibitionId: UUID? = null) {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
 
         when (fragmentType) {
@@ -119,11 +121,16 @@ class MainActivity : AppCompatActivity() {
                 fragmentTransaction.replace(R.id.fcMain, ExhibitionFragment.newInstance())
             }
             NamesOfFragment.ARTIST -> {
-                fragmentTransaction.replace(R.id.fcMain, ArtistFragment.newInstance())
+                if (exhibitionId != null) {
+                    fragmentTransaction.replace(R.id.fcMain, ArtistFragment.newInstance(exhibitionId))
+                } else {
+                    Log.e("MainActivity", "exhibitionId is null when opening ArtistFragment")
+                    return
+                }
             }
             NamesOfFragment.PAINTING -> {
                 painting?.let {
-                    fragmentTransaction.replace(R.id.fcMain, PaintingFragment.newInstance())
+                    fragmentTransaction.replace(R.id.fcMain, PaintingFragment.newInstance(it.id))
                 }
             }
         }
