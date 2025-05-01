@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.gallery_base.data.Artist
 import com.example.gallery_base.data.Exhibition
 import com.example.gallery_base.data.Painting
@@ -16,6 +17,7 @@ import com.example.gallery_base.data.Painting
         Painting::class
     ]
 )
+@TypeConverters(Converters::class)
 abstract class GalleryDatabase : RoomDatabase() {
     abstract fun getExhibitionDAO(): ExhibitionDAO
 

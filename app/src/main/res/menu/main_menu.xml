@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group>
+        <item
+            android:id="@+id/miAppendExhibition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:title="Добавить выставку " />
+        <item
+            android:id="@+id/miUpdateExhibition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:title="Изменить выставку" />
+        <item
+            android:id="@+id/miDeleteExhibition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:title="Удалить выставку" />
+        <item
+            android:id="@+id/miAppendArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:title="Добавить художника" />
+        <item
+            android:id="@+id/miUpdateArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:title="Изменить художника" />
+        <item
+            android:id="@+id/miDeleteArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:title="Удалить художника" />
+    </group>
+</menu>
