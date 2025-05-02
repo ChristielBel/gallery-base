@@ -11,7 +11,8 @@ import com.example.gallery_base.databinding.ItemExhibitionBinding
 import java.util.UUID
 
 class ExhibitionAdapter(
-    private val onItemClick: (Exhibition) -> Unit
+    private val onItemClick: (Exhibition) -> Unit,
+    private val onItemLongClick: (Exhibition) -> Unit
 ) : ListAdapter<Exhibition, ExhibitionAdapter.ExhibitionViewHolder>(DiffCallback) {
 
     private var selectedId: UUID? = null
@@ -41,6 +42,11 @@ class ExhibitionAdapter(
             binding.root.setOnClickListener {
                 onItemClick(exhibition)
                 setSelectedId(exhibition.id)
+            }
+
+            binding.root.setOnLongClickListener {
+                onItemLongClick(exhibition)
+                true
             }
         }
     }

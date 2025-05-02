@@ -113,16 +113,21 @@ class MainActivity : AppCompatActivity() {
         _miDeleteArtist?.isVisible = fragmentType == NamesOfFragment.ARTIST
     }
 
-    fun showFragment(fragmentType: NamesOfFragment, painting: Painting?,  exhibitionId: UUID? = null) {
+    private var selectedExhibitionId: UUID? = null
+
+    fun showFragment(fragmentType: NamesOfFragment, painting: Painting?, exhibitionId: UUID? = null) {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
 
         when (fragmentType) {
             NamesOfFragment.EXHIBITION -> {
                 fragmentTransaction.replace(R.id.fcMain, ExhibitionFragment.newInstance())
+                selectedExhibitionId = null
             }
             NamesOfFragment.ARTIST -> {
-                if (exhibitionId != null) {
-                    fragmentTransaction.replace(R.id.fcMain, ArtistFragment.newInstance(exhibitionId))
+                val id = exhibitionId ?: selectedExhibitionId
+                if (id != null) {
+                    fragmentTransaction.replace(R.id.fcMain, ArtistFragment.newInstance(id))
+                    selectedExhibitionId = id
                 } else {
                     Log.e("MainActivity", "exhibitionId is null when opening ArtistFragment")
                     return

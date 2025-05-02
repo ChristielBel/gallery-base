@@ -49,21 +49,25 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = ExhibitionAdapter { exhibition ->
-            selectedExhibition = exhibition
-            adapter.setSelectedId(exhibition.id)
+        adapter = ExhibitionAdapter(
+            onItemClick = { exhibition ->
+                selectedExhibition = exhibition
+                adapter.setSelectedId(exhibition.id)
+            },
+            onItemLongClick = { exhibition ->
+                selectedExhibition = exhibition
+                adapter.setSelectedId(exhibition.id)
+                (activity as? MainActivity)?.showFragment(
+                    NamesOfFragment.ARTIST,
+                    null,
+                    exhibition.id
+                )
+            }
+        )
 
-            (activity as? MainActivity)?.showFragment(NamesOfFragment.ARTIST, null, exhibition.id)
-
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fcMain, ArtistFragment.newInstance(exhibition.id))
-                .addToBackStack(null)
-                .commit()
-        }
         binding.rvExhibition.layoutManager = LinearLayoutManager(requireContext())
         binding.rvExhibition.adapter = adapter
 
-        // Подписка на Flow из ViewModel
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.exhibitions.collect { exhibitions ->
                 adapter.submitList(exhibitions)
