@@ -1,6 +1,7 @@
 package com.example.gallery_base.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -11,8 +12,10 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class PaintingAdapter(
-    private val onItemClick: (Painting) -> Unit
-) : ListAdapter<Painting, PaintingAdapter.PaintingViewHolder>(DiffCallback) {
+    private val onLongClick: (Painting, View) -> Unit,
+    private val onEditClick: (Painting) -> Unit,
+    private val onDeleteClick: (Painting) -> Unit
+) : ListAdapter<Painting, PaintingAdapter.PaintingViewHolder>(PaintingDiffCallback()) {
 
     inner class PaintingViewHolder(private val binding: ItemPaintingBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -20,8 +23,27 @@ class PaintingAdapter(
         fun bind(painting: Painting) {
             binding.tvPaintingTitle.text = painting.title
 
+            binding.llPaintingButtons.visibility = View.GONE
+
+            // Долгое нажатие для показа кнопок
+            binding.root.setOnLongClickListener {
+                onLongClick(painting, binding.llPaintingButtons)
+                true
+            }
+
+            // Короткое нажатие - скрываем кнопки
             binding.root.setOnClickListener {
-                onItemClick(painting)
+                binding.llPaintingButtons.visibility = View.GONE
+            }
+
+            binding.ibEditPainting.setOnClickListener {
+                onEditClick(painting)
+                binding.llPaintingButtons.visibility = View.GONE
+            }
+
+            binding.ibDeletePainting.setOnClickListener {
+                onDeleteClick(painting)
+                binding.llPaintingButtons.visibility = View.GONE
             }
         }
     }
@@ -39,8 +61,10 @@ class PaintingAdapter(
         holder.bind(getItem(position))
     }
 
-    private companion object DiffCallback : DiffUtil.ItemCallback<Painting>() {
-        override fun areItemsTheSame(oldItem: Painting, newItem: Painting) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Painting, newItem: Painting) = oldItem == newItem
+    class PaintingDiffCallback : DiffUtil.ItemCallback<Painting>() {
+        override fun areItemsTheSame(oldItem: Painting, newItem: Painting) =
+            oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Painting, newItem: Painting) =
+            oldItem == newItem
     }
 }

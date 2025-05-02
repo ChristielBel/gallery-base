@@ -7,19 +7,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.example.gallery_base.MainActivity
 import com.example.gallery_base.MyApplication
 import com.example.gallery_base.R
 import com.example.gallery_base.adapter.ArtistAdapter
 import com.example.gallery_base.data.Artist
-import com.example.gallery_base.data.Exhibition
 import com.example.gallery_base.databinding.FragmentArtistBinding
+import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -29,53 +30,98 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
         private const val ARG_EXHIBITION_ID = "exhibition_id"
 
         fun newInstance(exhibitionId: UUID): ArtistFragment {
-            val fragment = ArtistFragment()
-            fragment.arguments = Bundle().apply {
-                putSerializable(ARG_EXHIBITION_ID, exhibitionId)
+            return ArtistFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable(ARG_EXHIBITION_ID, exhibitionId)
+                }
             }
-            return fragment
         }
     }
 
     private lateinit var binding: FragmentArtistBinding
-    private lateinit var adapter: ArtistAdapter
     private val viewModel: ArtistViewModel by viewModels {
         ArtistViewModelFactory((requireActivity().application as MyApplication).artistRepository)
     }
     private var selectedArtist: Artist? = null
     private lateinit var exhibitionId: UUID
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = FragmentArtistBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
+        FragmentArtistBinding.inflate(inflater, container, false).also { binding = it }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        exhibitionId = requireArguments().getSerializable(ARG_EXHIBITION_ID) as UUID
+        // Настройка ViewPager2
+        binding.vpArtists.offscreenPageLimit = 3 // Кэшируем больше страниц
+        // Настройка отступов между элементами
+        val pageMarginPx = resources.getDimensionPixelOffset(R.dimen.page_margin)
+        val offsetPx = resources.getDimensionPixelOffset(R.dimen.offset)
 
-        adapter = ArtistAdapter { artist ->
-            selectedArtist = artist
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fcMain, PaintingFragment.newInstance(artist.id))
-                .addToBackStack(null)
-                .commit()
+        binding.vpArtists.setPageTransformer { page, position ->
+            val viewPager = page.parent.parent as ViewPager2
+            val offset = position * -(2 * offsetPx + pageMarginPx)
+
+            if (viewPager.orientation == ViewPager2.ORIENTATION_HORIZONTAL) {
+                if (ViewCompat.getLayoutDirection(viewPager) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+                    page.translationX = -offset
+                } else {
+                    page.translationX = offset
+                }
+            } else {
+                page.translationY = offset
+            }
         }
-
-
-
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerView.adapter = adapter
-
-        val exhibitionId = requireArguments().getSerializable(ARG_EXHIBITION_ID) as UUID
+        exhibitionId = requireArguments().getSerializable(ARG_EXHIBITION_ID) as UUID
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.getArtistsByExhibition(exhibitionId).collect {
-                    adapter.submitList(it)
+                viewModel.getArtistsByExhibition(exhibitionId).collect { artists ->
+                    setupViewPagerWithTabs(artists)
                 }
             }
         }
+    }
+
+    private var currentPosition = 0
+    private val paintingViewModel: PaintingViewModel by viewModels {
+        PaintingViewModelFactory((requireActivity().application as MyApplication).paintingRepository)
+    }
+
+    private fun setupViewPagerWithTabs(artists: List<Artist>) {
+        if (artists.isEmpty()) {
+            // Показать пустое состояние
+            return
+        }
+
+        val pagerAdapter = ArtistAdapter(
+            fragment = this,
+            artists = artists,
+            onArtistSelected = { artist ->
+                selectedArtist = artist
+            },
+            onPaintingLongClick = { painting, view ->
+                // Обработка долгого нажатия
+            },
+            onPaintingEditClick = { painting ->
+
+            },
+            onPaintingDeleteClick = { painting ->
+
+            },
+            onAddPaintingClick = { artistId ->
+
+            }
+        )
+
+        binding.vpArtists.adapter = pagerAdapter
+        TabLayoutMediator(binding.tlArtists, binding.vpArtists) { tab, position ->
+            tab.text = artists[position].name
+        }.attach()
+    }
+
+    private fun updateTabSelection(position: Int) {
+        val tab = binding.tlArtists.getTabAt(position)
+        tab?.select()
     }
 
     override fun append() {
@@ -93,13 +139,13 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
                     val newArtist = Artist(name = input, exhibitionId = exhibitionId)
                     lifecycleScope.launch {
                         viewModel.insertArtist(newArtist)
+                        // ViewPager автоматически обновится через Flow
                     }
                 }
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
-
 
     override fun update() {
         val current = selectedArtist

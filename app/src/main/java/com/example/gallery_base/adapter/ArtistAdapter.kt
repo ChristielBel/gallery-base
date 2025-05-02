@@ -1,40 +1,119 @@
 package com.example.gallery_base.adapter
 
+import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.gallery_base.data.Artist
-import com.example.gallery_base.databinding.ItemArtistBinding
+import com.example.gallery_base.data.Painting
+import com.example.gallery_base.databinding.FragmentPaintingBinding
+import com.example.gallery_base.fragment.PaintingFragment
+import com.example.gallery_base.fragment.PaintingViewModel
+import kotlinx.coroutines.launch
+import java.util.UUID
 
 class ArtistAdapter(
-    private val onClick: (Artist) -> Unit
-) : ListAdapter<Artist, ArtistAdapter.ArtistViewHolder>(ArtistDiffCallback()) {
+    fragment: Fragment,
+    private val artists: List<Artist>,
+    private val onArtistSelected: (Artist) -> Unit,
+    private val onPaintingLongClick: (Painting, View) -> Unit,
+    private val onPaintingEditClick: (Painting) -> Unit,
+    private val onPaintingDeleteClick: (Painting) -> Unit,
+    private val onAddPaintingClick: (UUID) -> Unit
+) : FragmentStateAdapter(fragment) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArtistViewHolder {
-        val binding = ItemArtistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ArtistViewHolder(binding)
+    override fun getItemCount(): Int = artists.size
+
+    override fun createFragment(position: Int): Fragment {
+        return PaintingFragment.newInstance(artists[position].id)
     }
 
-    override fun onBindViewHolder(holder: ArtistViewHolder, position: Int) {
-        holder.bind(getItem(position))
-    }
+    class ArtistPaintingsFragment : Fragment() {
+        private var _binding: FragmentPaintingBinding? = null
+        private val binding get() = _binding!!
+        private lateinit var paintingAdapter: PaintingAdapter
+        private val viewModel: PaintingViewModel by viewModels(ownerProducer = { requireParentFragment() })
+        private lateinit var artistId: UUID  // Теперь храним только ID
+        private var paintingActionListener: PaintingActionListener? = null
 
-    inner class ArtistViewHolder(private val binding: ItemArtistBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(artist: Artist) {
-            binding.tvArtist.text = artist.name
-            binding.root.setOnClickListener { onClick(artist) }
+        fun setPaintingActionListener(listener: PaintingActionListener) {
+            this.paintingActionListener = listener
+        }
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            artistId = requireArguments().getSerializable("artist_id") as UUID
+        }
+
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View {
+            _binding = FragmentPaintingBinding.inflate(inflater, container, false)
+            return binding.root
+        }
+
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
+
+            paintingAdapter = PaintingAdapter(
+                onLongClick = { painting, view ->
+                    paintingActionListener?.onPaintingLongClick(painting, view)
+                },
+                onEditClick = { painting ->
+                    paintingActionListener?.onPaintingEditClick(painting)
+                },
+                onDeleteClick = { painting ->
+                    paintingActionListener?.onPaintingDeleteClick(painting)
+                }
+            )
+
+            binding.rvPainting.apply {
+                layoutManager = GridLayoutManager(context, 2)
+                adapter = paintingAdapter
+            }
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    viewModel.getPaintingsByArtist(artistId).collect { paintings ->  // Используем artistId
+                        paintingAdapter.submitList(paintings)
+                    }
+                }
+            }
+
+            binding.fabAppendPainting.setOnClickListener {
+                paintingActionListener?.onAddPaintingClick(artistId)  // Используем artistId
+            }
+        }
+
+        override fun onDestroyView() {
+            super.onDestroyView()
+            _binding = null
+        }
+
+        companion object {
+            fun newInstance(artistId: UUID): ArtistPaintingsFragment {
+                return ArtistPaintingsFragment().apply {
+                    arguments = Bundle().apply {
+                        putSerializable("artist_id", artistId)
+                    }
+                }
+            }
         }
     }
 
-    class ArtistDiffCallback : DiffUtil.ItemCallback<Artist>() {
-        override fun areItemsTheSame(oldItem: Artist, newItem: Artist): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: Artist, newItem: Artist): Boolean {
-            return oldItem == newItem
-        }
+    interface PaintingActionListener {
+        fun onPaintingLongClick(painting: Painting, view: View)
+        fun onPaintingEditClick(painting: Painting)
+        fun onPaintingDeleteClick(painting: Painting)
+        fun onAddPaintingClick(artistId: UUID)
     }
 }
