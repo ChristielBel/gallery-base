@@ -8,8 +8,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gallery_base.data.Painting
 import com.example.gallery_base.databinding.ItemPaintingBinding
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class PaintingAdapter(
     private val onLongClick: (Painting, View) -> Unit,

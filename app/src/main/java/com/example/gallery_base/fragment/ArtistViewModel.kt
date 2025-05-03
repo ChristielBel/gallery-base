@@ -41,8 +41,6 @@ class ArtistViewModel(private val repository: ArtistRepository) : ViewModel() {
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     }
 }
-    
-
 
 class ArtistViewModelFactory(
     private val repository: ArtistRepository

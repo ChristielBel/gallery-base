@@ -21,8 +21,11 @@ class ExhibitionAdapter(
         val oldId = selectedId
         selectedId = id
 
-        val oldIndex = currentList.indexOfFirst { it.id == oldId }
-        val newIndex = currentList.indexOfFirst { it.id == id }
+        // Используем snapshot списка
+        val snapshot = currentList
+
+        val oldIndex = snapshot.indexOfFirst { it.id == oldId }
+        val newIndex = snapshot.indexOfFirst { it.id == id }
 
         if (oldIndex != -1) notifyItemChanged(oldIndex)
         if (newIndex != -1 && newIndex != oldIndex) notifyItemChanged(newIndex)

@@ -13,3 +13,4 @@ data class ExhibitionDTO(
 )
 
 fun ExhibitionDTO.toEntity() = Exhibition(id, title)
+fun Exhibition.toDTO() = ExhibitionDTO(id, title)

@@ -1,5 +1,6 @@
 package com.example.gallery_base.dto
 
+import com.example.gallery_base.data.Exhibition
 import com.example.gallery_base.data.Painting
 import com.google.gson.annotations.SerializedName
 import java.util.Date
@@ -19,3 +20,4 @@ data class PaintingDTO(
 )
 
 fun PaintingDTO.toEntity() = Painting(id, title, artistId, dateOfWriting, description)
+fun Painting.toDTO() = PaintingDTO(id, title, artistId, dateOfWriting, description)

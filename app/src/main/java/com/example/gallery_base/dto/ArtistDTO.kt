@@ -1,6 +1,7 @@
 package com.example.gallery_base.dto
 
 import com.example.gallery_base.data.Artist
+import com.example.gallery_base.data.Exhibition
 import com.google.gson.annotations.SerializedName
 import java.util.UUID
 
@@ -14,3 +15,4 @@ data class ArtistDTO(
 )
 
 fun ArtistDTO.toEntity() = Artist(id, name, exhibitionId)
+fun Artist.toDTO() = ArtistDTO(id, name, exhibitionId)

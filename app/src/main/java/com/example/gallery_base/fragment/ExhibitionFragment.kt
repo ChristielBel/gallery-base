@@ -2,6 +2,7 @@ package com.example.gallery_base.fragment
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ import com.example.gallery_base.adapter.ExhibitionAdapter
 import com.example.gallery_base.data.AppContainer
 import com.example.gallery_base.data.Exhibition
 import com.example.gallery_base.databinding.FragmentExhibitionBinding
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class ExhibitionFragment : Fragment(), MainActivity.Edit {
@@ -70,7 +72,17 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.exhibitions.collect { exhibitions ->
+                Log.d("ExhibitionFragment", "Exhibitions updated: $exhibitions")
                 adapter.submitList(exhibitions)
+            }
+        }
+
+        // Observe error messages
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.errorMessage.collect { message ->
+                message?.let {
+                    showError(it) // Show error dialog if an error message exists
+                }
             }
         }
     }
@@ -78,6 +90,14 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showError(message: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Ошибка")
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     override fun append() {
@@ -92,16 +112,18 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
             .setPositiveButton("Сохранить") { _, _ ->
                 val input = editText.text.toString()
                 if (input.isNotBlank()) {
-                    val newExhibition = Exhibition(title = input)
                     lifecycleScope.launch {
-                        viewModel.insertExhibition(newExhibition)
+                        try {
+                            viewModel.insertExhibition(Exhibition(title = input))
+                        } catch (e: Exception) {
+                            showError(e.message ?: "Неизвестная ошибка")
+                        }
                     }
                 }
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
-
 
     override fun update() {
         val current = selectedExhibition
@@ -118,9 +140,12 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
                 .setPositiveButton("Сохранить") { _, _ ->
                     val updatedTitle = editText.text.toString()
                     if (updatedTitle.isNotBlank()) {
-                        val updated = current.copy(title = updatedTitle)
                         lifecycleScope.launch {
-                            viewModel.updateExhibition(updated)
+                            try {
+                                viewModel.updateExhibition(current.copy(title = updatedTitle))
+                            } catch (e: Exception) {
+                                showError(e.message ?: "Неизвестная ошибка")
+                            }
                         }
                     }
                 }
@@ -128,7 +153,6 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
                 .show()
         }
     }
-
 
     override fun delete() {
         val current = selectedExhibition
@@ -138,8 +162,12 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
                 .setMessage("Вы действительно хотите удалить выставку \"${current.title}\"?")
                 .setPositiveButton("Да") { _, _ ->
                     lifecycleScope.launch {
-                        viewModel.deleteExhibition(current)
-                        selectedExhibition = null
+                        try {
+                            viewModel.deleteExhibition(current)
+                            selectedExhibition = null
+                        } catch (e: Exception) {
+                            showError(e.message ?: "Неизвестная ошибка")
+                        }
                     }
                 }
                 .setNegativeButton("Отмена", null)

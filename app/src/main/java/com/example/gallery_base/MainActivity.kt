@@ -5,18 +5,12 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.addCallback
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.gallery_base.data.Exhibition
 import com.example.gallery_base.data.Painting
 import com.example.gallery_base.fragment.ArtistFragment
 import com.example.gallery_base.fragment.ExhibitionFragment
 import com.example.gallery_base.fragment.PaintingFragment
-import com.example.gallery_base.repository.ExhibitionRepository
 import java.util.UUID
-import kotlin.math.log
 
 class MainActivity : AppCompatActivity() {
     interface Edit {
