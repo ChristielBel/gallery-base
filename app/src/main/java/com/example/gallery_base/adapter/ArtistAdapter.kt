@@ -22,11 +22,7 @@ import java.util.UUID
 class ArtistAdapter(
     fragment: Fragment,
     private val artists: List<Artist>,
-    private val onArtistSelected: (Artist) -> Unit,
-    private val onPaintingLongClick: (Painting, View) -> Unit,
-    private val onPaintingEditClick: (Painting) -> Unit,
-    private val onPaintingDeleteClick: (Painting) -> Unit,
-    private val onAddPaintingClick: (UUID) -> Unit
+    private val onArtistSelected: (Artist) -> Unit
 ) : FragmentStateAdapter(fragment) {
 
     override fun getItemCount(): Int = artists.size

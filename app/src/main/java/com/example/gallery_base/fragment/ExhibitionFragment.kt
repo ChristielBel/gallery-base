@@ -64,6 +64,8 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
                     null,
                     exhibition.id
                 )
+                Log.e("exxzx", "$exhibition")
+                Log.e("exxzx", "${exhibition.id}")
             }
         )
 

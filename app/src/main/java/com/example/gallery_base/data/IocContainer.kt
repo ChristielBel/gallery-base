@@ -48,12 +48,14 @@ class AppContainer(private val context: Context) : IocContainer {
     }
 
     override val exhibitionRepository: ExhibitionRepository by lazy {
-       exhibitionRepositoryImpl
+        CachedExhibitionRepository(exhibitionRepositoryImpl, offlineExhibitionRepo)
     }
 
     override val artistRepository: ArtistRepository by lazy {
-     artistRepositoryImpl }
+        CachedArtistRepository(artistRepositoryImpl, offlineArtistRepo)
+    }
 
     override val paintingRepository: PaintingRepository by lazy {
-       paintingRepositoryImpl  }
+        CachedPaintingRepository(paintingRepositoryImpl, offlinePaintingRepo)
+    }
 }

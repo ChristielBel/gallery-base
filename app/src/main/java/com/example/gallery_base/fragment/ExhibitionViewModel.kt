@@ -7,12 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.gallery_base.data.Exhibition
 import com.example.gallery_base.repository.ExhibitionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ExhibitionViewModel(private val repository: ExhibitionRepository) : ViewModel() {

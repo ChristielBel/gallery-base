@@ -2,6 +2,7 @@ package com.example.gallery_base.fragment
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,7 +33,8 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
         fun newInstance(exhibitionId: UUID): ArtistFragment {
             return ArtistFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_EXHIBITION_ID, exhibitionId)
+                    Log.d("Artist", "$exhibitionId")
+                    putUUID(ARG_EXHIBITION_ID, exhibitionId)
                 }
             }
         }
@@ -48,6 +50,13 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
         FragmentArtistBinding.inflate(inflater, container, false).also { binding = it }.root
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        selectedArtist?.let {
+            outState.putString("SELECTED_ARTIST_ID", it.id.toString())
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -58,6 +67,7 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
         val offsetPx = resources.getDimensionPixelOffset(R.dimen.offset)
 
         binding.vpArtists.setPageTransformer { page, position ->
+
             val viewPager = page.parent.parent as ViewPager2
             val offset = position * -(2 * offsetPx + pageMarginPx)
 
@@ -71,7 +81,9 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
                 page.translationY = offset
             }
         }
-        exhibitionId = requireArguments().getSerializable(ARG_EXHIBITION_ID) as UUID
+
+        exhibitionId = requireArguments().getUUID(ARG_EXHIBITION_ID)
+            ?: throw IllegalStateException("Exhibition ID must not be null")
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -98,18 +110,6 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
             artists = artists,
             onArtistSelected = { artist ->
                 selectedArtist = artist
-            },
-            onPaintingLongClick = { painting, view ->
-                // Обработка долгого нажатия
-            },
-            onPaintingEditClick = { painting ->
-
-            },
-            onPaintingDeleteClick = { painting ->
-
-            },
-            onAddPaintingClick = { artistId ->
-
             }
         )
 
@@ -129,7 +129,7 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
         val editText = dialogView.findViewById<EditText>(R.id.etString)
         val textView = dialogView.findViewById<TextView>(R.id.tvInfo)
         textView.text = "Введите ФИО нового художника"
-
+        Log.e("exxzx", "$exhibitionId")
         AlertDialog.Builder(requireContext())
             .setTitle("Добавить художника")
             .setView(dialogView)
@@ -194,5 +194,13 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
                 .setPositiveButton("Ок", null)
                 .show()
         }
+    }
+
+    fun Bundle.putUUID(key: String, value: UUID) {
+        putString(key, value.toString())
+    }
+
+    fun Bundle.getUUID(key: String): UUID? {
+        return getString(key)?.let { UUID.fromString(it) }
     }
 }
