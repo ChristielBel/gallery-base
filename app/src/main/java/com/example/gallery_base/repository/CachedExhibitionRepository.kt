@@ -5,20 +5,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 
-class CachedExhibitionRepository(private val networkRepo: ExhibitionRepositoryImpl,
-                                 private val offlineRepo: OfflineExhibitionRepository) : ExhibitionRepository {
+class CachedExhibitionRepository(
+    private val networkRepo: ExhibitionRepositoryImpl,
+    private val offlineRepo: OfflineExhibitionRepository
+) : ExhibitionRepository {
     override fun getAllExhibitions(): Flow<List<Exhibition>> = flow {
         try {
-            // Пытаемся получить данные из сети
             val networkExhibitions = networkRepo.getAllExhibitions().first()
-
-            // Обновляем локальную базу
             offlineRepo.deleteAllExhibitions()
             offlineRepo.insertAllExhibitions(networkExhibitions)
 
             emit(networkExhibitions)
         } catch (e: Exception) {
-            // Если нет сети, используем локальные данные
             emit(offlineRepo.getAllExhibitions().first())
         }
     }
@@ -26,10 +24,8 @@ class CachedExhibitionRepository(private val networkRepo: ExhibitionRepositoryIm
     override suspend fun insertExhibition(exhibition: Exhibition) {
         try {
             networkRepo.insertExhibition(exhibition)
-            // После успешного сохранения в сети, сохраняем локально
             offlineRepo.insertExhibition(exhibition)
         } catch (e: Exception) {
-            // Если нет сети, сохраняем только локально
             offlineRepo.insertExhibition(exhibition)
             throw Exception("Saved locally. Will sync when online: ${e.message}")
         }

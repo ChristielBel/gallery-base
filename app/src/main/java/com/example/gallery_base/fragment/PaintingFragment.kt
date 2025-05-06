@@ -28,7 +28,7 @@ class PaintingFragment : Fragment() {
         fun newInstance(artistId: UUID): PaintingFragment {
             return PaintingFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(ARG_ARTIST_ID, artistId)
+                    putString(ARG_ARTIST_ID, artistId.toString())
                 }
             }
         }
@@ -37,7 +37,7 @@ class PaintingFragment : Fragment() {
     private lateinit var binding: FragmentPaintingBinding
     private lateinit var adapter: PaintingAdapter
     private val viewModel: PaintingViewModel by viewModels {
-        PaintingViewModelFactory((requireActivity().application as MyApplication).paintingRepository)
+        PaintingViewModelFactory((requireActivity().application as MyApplication).appContainer.paintingRepository)
     }
 
     override fun onCreateView(
@@ -64,10 +64,13 @@ class PaintingFragment : Fragment() {
             }
         )
 
-        binding.rvPainting.layoutManager = GridLayoutManager(requireContext(), 2)
+        binding.rvPainting.layoutManager = GridLayoutManager(requireContext(), 1)
         binding.rvPainting.adapter = adapter
 
-        val artistId = requireArguments().getSerializable(ARG_ARTIST_ID) as UUID
+        val artistIdString = requireArguments().getString(ARG_ARTIST_ID)
+        val artistId = UUID.fromString(
+            artistIdString ?: throw IllegalArgumentException("Artist ID must not be null")
+        )
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {

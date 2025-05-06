@@ -12,20 +12,20 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExhibitionDAO {
     @Query("SELECT * FROM exhibition ORDER BY title")
-    fun getAllExhibitions() : Flow<List<Exhibition>>
+    fun getAllExhibitions(): Flow<List<Exhibition>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExhibition(exhibition: Exhibition)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllExhibitions(list : List<Exhibition>)
+    suspend fun insertAllExhibitions(list: List<Exhibition>)
 
     @Update
-    suspend fun updateExhibition(exhibition : Exhibition)
+    suspend fun updateExhibition(exhibition: Exhibition)
 
-   @Delete
-   suspend fun deleteExhibition(exhibition: Exhibition)
+    @Delete
+    suspend fun deleteExhibition(exhibition: Exhibition)
 
-   @Query("DELETE FROM exhibition")
-   suspend fun deleteAllExhibitions()
+    @Query("DELETE FROM exhibition")
+    suspend fun deleteAllExhibitions()
 }

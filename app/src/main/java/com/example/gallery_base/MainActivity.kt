@@ -36,14 +36,15 @@ class MainActivity : AppCompatActivity() {
                         activeFragment = NamesOfFragment.EXHIBITION
                     }
 
-            NamesOfFragment.PAINTING -> {
-            activeFragment = NamesOfFragment.ARTIST
-        }
+                    NamesOfFragment.PAINTING -> {
+                        activeFragment = NamesOfFragment.ARTIST
+                    }
 
-            else -> {}
-        }
-        updateMenu(activeFragment)
-    } else {
+                    else -> {}
+                }
+                updateMenu(activeFragment)
+                title = getTitleForFragment(activeFragment)
+            } else {
                 finish()
             }
         }
@@ -82,20 +83,27 @@ class MainActivity : AppCompatActivity() {
                 edit?.append()
                 true
             }
+
             R.id.miUpdateExhibition, R.id.miUpdateArtist -> {
                 edit?.update()
                 true
             }
+
             R.id.miDeleteExhibition, R.id.miDeleteArtist -> {
                 edit?.delete()
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    fun newTitle(_title: String) {
-        title = _title
+    private fun getTitleForFragment(fragmentType: NamesOfFragment): String {
+        return when (fragmentType) {
+            NamesOfFragment.EXHIBITION -> getString(R.string.title_exhibitions)
+            NamesOfFragment.ARTIST -> getString(R.string.title_artists)
+            NamesOfFragment.PAINTING -> getString(R.string.title_paintings)
+        }
     }
 
     private fun updateMenu(fragmentType: NamesOfFragment) {
@@ -109,7 +117,11 @@ class MainActivity : AppCompatActivity() {
 
     private var selectedExhibitionId: UUID? = null
 
-    fun showFragment(fragmentType: NamesOfFragment, painting: Painting?, exhibitionId: UUID? = null) {
+    fun showFragment(
+        fragmentType: NamesOfFragment,
+        painting: Painting?,
+        exhibitionId: UUID? = null
+    ) {
         val fragmentTransaction = supportFragmentManager.beginTransaction()
 
         when (fragmentType) {
@@ -117,6 +129,7 @@ class MainActivity : AppCompatActivity() {
                 fragmentTransaction.replace(R.id.fcMain, ExhibitionFragment.newInstance())
                 selectedExhibitionId = null
             }
+
             NamesOfFragment.ARTIST -> {
                 val id = exhibitionId ?: selectedExhibitionId
                 if (id != null) {
@@ -127,6 +140,7 @@ class MainActivity : AppCompatActivity() {
                     return
                 }
             }
+
             NamesOfFragment.PAINTING -> {
                 painting?.let {
                     fragmentTransaction.replace(R.id.fcMain, PaintingFragment.newInstance(it.id))
@@ -137,6 +151,7 @@ class MainActivity : AppCompatActivity() {
         fragmentTransaction.addToBackStack(null).commit()
         activeFragment = fragmentType
         updateMenu(fragmentType)
+        title = getTitleForFragment(fragmentType)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {

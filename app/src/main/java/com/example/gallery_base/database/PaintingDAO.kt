@@ -22,7 +22,7 @@ interface PaintingDAO {
     suspend fun insertPainting(painting: Painting)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllPaintings(list : List<Painting>)
+    suspend fun insertAllPaintings(list: List<Painting>)
 
     @Update
     suspend fun updatePainting(painting: Painting)

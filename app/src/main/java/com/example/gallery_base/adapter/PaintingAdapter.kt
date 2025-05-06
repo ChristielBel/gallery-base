@@ -23,13 +23,11 @@ class PaintingAdapter(
 
             binding.llPaintingButtons.visibility = View.GONE
 
-            // Долгое нажатие для показа кнопок
             binding.root.setOnLongClickListener {
                 onLongClick(painting, binding.llPaintingButtons)
                 true
             }
 
-            // Короткое нажатие - скрываем кнопки
             binding.root.setOnClickListener {
                 binding.llPaintingButtons.visibility = View.GONE
             }
@@ -62,6 +60,7 @@ class PaintingAdapter(
     class PaintingDiffCallback : DiffUtil.ItemCallback<Painting>() {
         override fun areItemsTheSame(oldItem: Painting, newItem: Painting) =
             oldItem.id == newItem.id
+
         override fun areContentsTheSame(oldItem: Painting, newItem: Painting) =
             oldItem == newItem
     }

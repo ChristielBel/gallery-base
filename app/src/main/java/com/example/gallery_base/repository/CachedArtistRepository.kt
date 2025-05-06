@@ -1,5 +1,6 @@
 package com.example.gallery_base.repository
 
+import android.util.Log
 import com.example.gallery_base.data.Artist
 import com.example.gallery_base.data.Exhibition
 import kotlinx.coroutines.flow.Flow
@@ -8,10 +9,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
-class CachedArtistRepository(private val networkRepo: ArtistRepositoryImpl,
-                             private val offlineRepo: OfflineArtistRepository) : ArtistRepository {
+class CachedArtistRepository(
+    private val networkRepo: ArtistRepositoryImpl,
+    private val offlineRepo: OfflineArtistRepository
+) : ArtistRepository {
     override fun getAllArtists(): Flow<List<Artist>> = flow {
         try {
+            Log.e("Cached", "All")
             val networkArtists = networkRepo.getAllArtists().first()
             offlineRepo.deleteAllArtists()
             offlineRepo.insertAllArtists(networkArtists)
@@ -22,8 +26,14 @@ class CachedArtistRepository(private val networkRepo: ArtistRepositoryImpl,
     }
 
     override fun getByExhibition(exhibitionId: UUID): Flow<List<Artist>> {
+        Log.d("CachedArtistRepo", "getByExhibition for $exhibitionId")
         return getAllArtists().map { artists ->
-            artists.filter { it.exhibitionId == exhibitionId }
+            val filtered = artists.filter { it.exhibitionId == exhibitionId }
+            Log.d(
+                "CachedArtistRepo",
+                "Filtered ${filtered.size} artists for exhibition $exhibitionId"
+            )
+            filtered
         }
     }
 

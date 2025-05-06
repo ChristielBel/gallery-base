@@ -16,13 +16,13 @@ interface ArtistDAO {
     fun getAllArtists(): Flow<List<Artist>>
 
     @Query("SELECT * FROM artist WHERE exhibition_id = :exhibitionId")
-    fun getByExhibition(exhibitionId : UUID) : Flow<List<Artist>>
+    fun getByExhibition(exhibitionId: UUID): Flow<List<Artist>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertArtist(artist: Artist)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllArtists(list : List<Artist>)
+    suspend fun insertAllArtists(list: List<Artist>)
 
     @Update
     suspend fun updateArtist(artist: Artist)

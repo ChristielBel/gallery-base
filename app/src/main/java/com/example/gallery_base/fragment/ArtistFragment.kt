@@ -42,12 +42,16 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
 
     private lateinit var binding: FragmentArtistBinding
     private val viewModel: ArtistViewModel by viewModels {
-        ArtistViewModelFactory((requireActivity().application as MyApplication).artistRepository)
+        ArtistViewModelFactory((requireActivity().application as MyApplication).appContainer.artistRepository)
     }
     private var selectedArtist: Artist? = null
     private lateinit var exhibitionId: UUID
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ) =
         FragmentArtistBinding.inflate(inflater, container, false).also { binding = it }.root
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -60,48 +64,26 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Настройка ViewPager2
-        binding.vpArtists.offscreenPageLimit = 3 // Кэшируем больше страниц
-        // Настройка отступов между элементами
-        val pageMarginPx = resources.getDimensionPixelOffset(R.dimen.page_margin)
-        val offsetPx = resources.getDimensionPixelOffset(R.dimen.offset)
-
-        binding.vpArtists.setPageTransformer { page, position ->
-
-            val viewPager = page.parent.parent as ViewPager2
-            val offset = position * -(2 * offsetPx + pageMarginPx)
-
-            if (viewPager.orientation == ViewPager2.ORIENTATION_HORIZONTAL) {
-                if (ViewCompat.getLayoutDirection(viewPager) == ViewCompat.LAYOUT_DIRECTION_RTL) {
-                    page.translationX = -offset
-                } else {
-                    page.translationX = offset
-                }
-            } else {
-                page.translationY = offset
-            }
-        }
-
         exhibitionId = requireArguments().getUUID(ARG_EXHIBITION_ID)
             ?: throw IllegalStateException("Exhibition ID must not be null")
 
+        Log.d("ArtistFragment", "onViewCreated, exhibitionId: $exhibitionId")
+
+        binding.vpArtists.offscreenPageLimit = 3
+
+        viewModel.getArtistsByExhibition(exhibitionId)
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.getArtistsByExhibition(exhibitionId).collect { artists ->
+                viewModel.artistsByExhibition.collect { artists ->
                     setupViewPagerWithTabs(artists)
                 }
             }
         }
     }
 
-    private var currentPosition = 0
-    private val paintingViewModel: PaintingViewModel by viewModels {
-        PaintingViewModelFactory((requireActivity().application as MyApplication).paintingRepository)
-    }
-
     private fun setupViewPagerWithTabs(artists: List<Artist>) {
         if (artists.isEmpty()) {
-            // Показать пустое состояние
             return
         }
 
@@ -129,17 +111,16 @@ class ArtistFragment : Fragment(), MainActivity.Edit {
         val editText = dialogView.findViewById<EditText>(R.id.etString)
         val textView = dialogView.findViewById<TextView>(R.id.tvInfo)
         textView.text = "Введите ФИО нового художника"
-        Log.e("exxzx", "$exhibitionId")
         AlertDialog.Builder(requireContext())
             .setTitle("Добавить художника")
             .setView(dialogView)
             .setPositiveButton("Сохранить") { _, _ ->
+                Log.e("append", "$exhibitionId")
                 val input = editText.text.toString()
                 if (input.isNotBlank()) {
                     val newArtist = Artist(name = input, exhibitionId = exhibitionId)
                     lifecycleScope.launch {
                         viewModel.insertArtist(newArtist)
-                        // ViewPager автоматически обновится через Flow
                     }
                 }
             }

@@ -22,7 +22,6 @@ class ExhibitionAdapter(
         val oldId = selectedId
         selectedId = id
 
-        // Используем snapshot списка
         val snapshot = currentList
 
         val oldIndex = snapshot.indexOfFirst { it.id == oldId }
@@ -50,14 +49,14 @@ class ExhibitionAdapter(
 
             binding.root.setOnLongClickListener {
                 onItemLongClick(exhibition)
-                Log.e("exxzx", "$exhibition")
                 true
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExhibitionViewHolder {
-        val binding = ItemExhibitionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding =
+            ItemExhibitionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ExhibitionViewHolder(binding)
     }
 
@@ -66,7 +65,10 @@ class ExhibitionAdapter(
     }
 
     private companion object DiffCallback : DiffUtil.ItemCallback<Exhibition>() {
-        override fun areItemsTheSame(oldItem: Exhibition, newItem: Exhibition) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Exhibition, newItem: Exhibition) = oldItem == newItem
+        override fun areItemsTheSame(oldItem: Exhibition, newItem: Exhibition) =
+            oldItem.id == newItem.id
+
+        override fun areContentsTheSame(oldItem: Exhibition, newItem: Exhibition) =
+            oldItem == newItem
     }
 }

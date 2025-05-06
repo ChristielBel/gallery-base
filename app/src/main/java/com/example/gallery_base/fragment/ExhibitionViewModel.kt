@@ -31,7 +31,7 @@ class ExhibitionViewModel(private val repository: ExhibitionRepository) : ViewMo
                 }
                 .onEach { list ->
                     _exhibitions.value = list
-                    Log.d("ExhibitionViewModel", "Exhibitions updated: $list") // Добавьте логирование
+                    Log.d("ExhibitionViewModel", "Exhibitions updated: $list")
                 }
                 .collect { list ->
                     _exhibitions.value = list

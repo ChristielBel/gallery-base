@@ -79,11 +79,10 @@ class ExhibitionFragment : Fragment(), MainActivity.Edit {
             }
         }
 
-        // Observe error messages
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.errorMessage.collect { message ->
                 message?.let {
-                    showError(it) // Show error dialog if an error message exists
+                    showError(it)
                 }
             }
         }

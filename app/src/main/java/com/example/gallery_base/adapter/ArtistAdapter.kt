@@ -36,7 +36,7 @@ class ArtistAdapter(
         private val binding get() = _binding!!
         private lateinit var paintingAdapter: PaintingAdapter
         private val viewModel: PaintingViewModel by viewModels(ownerProducer = { requireParentFragment() })
-        private lateinit var artistId: UUID  // Теперь храним только ID
+        private lateinit var artistId: UUID
         private var paintingActionListener: PaintingActionListener? = null
 
         fun setPaintingActionListener(listener: PaintingActionListener) {
@@ -79,14 +79,15 @@ class ArtistAdapter(
 
             viewLifecycleOwner.lifecycleScope.launch {
                 viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.getPaintingsByArtist(artistId).collect { paintings ->  // Используем artistId
-                        paintingAdapter.submitList(paintings)
-                    }
+                    viewModel.getPaintingsByArtist(artistId)
+                        .collect { paintings ->
+                            paintingAdapter.submitList(paintings)
+                        }
                 }
             }
 
             binding.fabAppendPainting.setOnClickListener {
-                paintingActionListener?.onAddPaintingClick(artistId)  // Используем artistId
+                paintingActionListener?.onAddPaintingClick(artistId)
             }
         }
 

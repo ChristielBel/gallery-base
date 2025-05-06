@@ -11,9 +11,9 @@ data class PaintingDTO(
     val id: UUID = UUID.randomUUID(),
     @SerializedName("title")
     val title: String,
-    @SerializedName("artist_id")
+    @SerializedName("artistId")
     val artistId: UUID?,
-    @SerializedName("date_of_writing")
+    @SerializedName("dateOfWriting")
     val dateOfWriting: Date = Date(),
     @SerializedName("description")
     val description: String?

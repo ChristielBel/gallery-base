@@ -34,7 +34,6 @@ class PaintingInputFragment : Fragment() {
         val btnSave = view.findViewById<Button>(R.id.btnSave)
         val btnCancel = view.findViewById<Button>(R.id.btnCancel)
 
-        // Устанавливаем начальные значения
         arguments?.getString(ARG_TITLE)?.let { titleEdit.setText(it) }
         arguments?.getString(ARG_DESCRIPTION)?.let { descEdit.setText(it) }
 
@@ -45,7 +44,6 @@ class PaintingInputFragment : Fragment() {
 
             if (title.isNotBlank()) {
                 listener?.onPaintingSaved(title, description, date)
-                // Используем childFragmentManager для согласованности
                 parentFragmentManager.popBackStack()
             } else {
                 titleEdit.error = "Введите название"

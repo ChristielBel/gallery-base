@@ -10,10 +10,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
-class ArtistRepositoryImpl(private val api: ArtistController) : ArtistRepository  {
+class ArtistRepositoryImpl(private val api: ArtistController) : ArtistRepository {
     override fun getAllArtists(): Flow<List<Artist>> = flow {
         try {
             val response = api.getAllArtists()
+            Log.e("ArtistImpl", "$response")
             if (response.isSuccessful) {
                 val artists = response.body()?.map { it.toEntity() } ?: emptyList()
                 emit(artists)
@@ -27,13 +28,18 @@ class ArtistRepositoryImpl(private val api: ArtistController) : ArtistRepository
     }
 
     override fun getByExhibition(exhibitionId: UUID): Flow<List<Artist>> {
+        Log.d("ArtistRepoImpl", "getByExhibition for $exhibitionId")
         return getAllArtists().map { artists ->
-            artists.filter { it.exhibitionId == exhibitionId }
+            val filtered = artists.filter { it.exhibitionId == exhibitionId }
+            Log.d("ArtistRepoImpl", "Filtered ${filtered.size} artists")
+            filtered
         }
     }
 
     override suspend fun insertArtist(artist: Artist) {
+        Log.i("Artist", "Insert")
         val response = api.createArtist(artist.toDTO())
+        Log.i("Artist", "$artist")
         if (!response.isSuccessful) {
             throw Exception("Failed to create artist: ${response.code()}")
         }

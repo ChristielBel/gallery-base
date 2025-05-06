@@ -7,7 +7,7 @@ import java.util.UUID
 interface ArtistRepository {
     fun getAllArtists(): Flow<List<Artist>>
 
-    fun getByExhibition(exhibitionId : UUID): Flow<List<Artist>>
+    fun getByExhibition(exhibitionId: UUID): Flow<List<Artist>>
 
     suspend fun insertArtist(artist: Artist)
 

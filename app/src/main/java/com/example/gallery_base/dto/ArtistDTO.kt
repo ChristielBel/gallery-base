@@ -10,9 +10,15 @@ data class ArtistDTO(
     val id: UUID = UUID.randomUUID(),
     @SerializedName("name")
     val name: String,
-    @SerializedName("exhibition_id")
+    @SerializedName("exhibitionId")
     val exhibitionId: UUID?
 )
 
 fun ArtistDTO.toEntity() = Artist(id, name, exhibitionId)
-fun Artist.toDTO() = ArtistDTO(id, name, exhibitionId)
+fun Artist.toDTO(): ArtistDTO {
+    return ArtistDTO(
+        id = this.id,
+        name = this.name,
+        exhibitionId = this.exhibitionId
+    )
+}

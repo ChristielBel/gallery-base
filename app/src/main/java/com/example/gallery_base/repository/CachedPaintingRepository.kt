@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
-class CachedPaintingRepository(private val networkRepo: PaintingRepositoryImpl,
-                               private val offlineRepo: OfflinePaintingRepository) : PaintingRepository {
+class CachedPaintingRepository(
+    private val networkRepo: PaintingRepositoryImpl,
+    private val offlineRepo: OfflinePaintingRepository
+) : PaintingRepository {
     override fun getAllPaintings(): Flow<List<Painting>> = flow {
         try {
             val networkPaintings = networkRepo.getAllPaintings().first()

@@ -23,7 +23,7 @@ interface IocContainer {
 }
 
 class AppContainer(private val context: Context) : IocContainer {
-  private val database by lazy { GalleryDatabase.getDatabase(context) }
+    private val database by lazy { GalleryDatabase.getDatabase(context) }
 
     private val exhibitionRepositoryImpl by lazy {
         ExhibitionRepositoryImpl(Retrofit.exhibitionController)
